@@ -131,7 +131,7 @@ Contributions are welcome! Please open issues or pull requests.
 
 ## Contact
 
-For questions or help, reach out at: [Your Email]
+For questions or help, reach out to me  at: aagamanmainali35@gmail.com
 
 ---
 
