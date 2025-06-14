@@ -34,8 +34,8 @@ This backend API handles:
 1. **Clone the repository**
 
    ```bash
-   git clone <your-repo-url>
-   cd <your-repo-folder>
+   git clone https://github.com/AagamanMainali35/DRF-Ecommerce.git
+   cd DRF-Ecommerce
    ```
 
 2. **Create and activate a virtual environment**
