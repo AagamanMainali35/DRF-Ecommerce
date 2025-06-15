@@ -1,5 +1,5 @@
-from django.shortcuts import render
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import status
 from django.contrib.auth.models import User
@@ -8,9 +8,9 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from .models import *
 from .utility import generate_profile_id, checkpass , check_field
 from django.urls import reverse
-from django.db.transaction import atomic
 from django.db.models import Q
-import re
+
+
 @api_view(['POST'])
 def signup(requests):
     email = requests.data.get('email')
@@ -34,5 +34,5 @@ def signup(requests):
         Profile.objects.create(user=user_model,profile_id=profile_id,gender=gender)
         login_url= f'http://127.0.0.1:8000{reverse("signin")}'
         return Response({"message": f"Signup completed for {email}","login_url": login_url})
-def signin():
-    pass
+    
+
