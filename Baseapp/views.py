@@ -9,6 +9,7 @@ from .models import *
 from .utility import generate_profile_id, checkpass , check_field
 from django.urls import reverse
 from django.db.models import Q
+from .serializer import productserilzer
 
 
 @api_view(['POST'])
@@ -34,5 +35,54 @@ def signup(requests):
         Profile.objects.create(user=user_model,profile_id=profile_id,gender=gender)
         login_url= f'http://127.0.0.1:8000{reverse("signin")}'
         return Response({"message": f"Signup completed for {email}","login_url": login_url})
-    
 
+@permission_classes([IsAuthenticated])
+@api_view(['POST'])
+def create_product(request):
+    Requested_data= productserilzer(data=request.data)
+    if Requested_data.is_valid() is False:
+        return Response({'error': Requested_data.errors, 'status': status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
+    else : 
+        Requested_data.save() 
+        return Response({'message':'Product Creation successful','status':status.HTTP_201_CREATED}, status=status.HTTP_201_CREATED)
+
+@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+def get_products(request):
+    products = Product.objects.all()
+    serializer = productserilzer(products, many=True)
+    return Response(serializer.data, status=status.HTTP_200_OK)
+
+@permission_classes([IsAuthenticated])
+@api_view(['GET'])
+def get_productById(request, product_id):
+    try:
+        product = Product.objects.get(id=product_id)
+        serializer = productserilzer(product)
+        return Response(serializer.data, status=status.HTTP_200_OK)
+    except Product.DoesNotExist:
+        return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND    )
+
+@permission_classes([IsAuthenticated])
+@api_view(['DELETE'])
+def delete_Product(request,id):
+    try:
+        product=Product.objects.get(id=id)
+        product.delete()
+        return Response({'message': 'Product deleted successfully','status':status.HTTP_200_OK}, status=status.HTTP_200_OK)
+    except Product.DoesNotExist:
+        return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND)
+    
+permission_classes([IsAuthenticated])
+@api_view(['PATCH'])
+def update_product(request, id):
+    try:
+        products=Product.objects.get(id=id)
+        validation=productserilzer(products,partial=True,data=request.data)
+        if validation.is_valid():
+            print(validation._validated_data)
+            validation.save()
+            return Response({'message':'update sucessfull','data':validation.data}, status=status.HTTP_200_OK)
+
+    except Product.DoesNotExist:
+        return Response({'message':'No product With fiven ID found', 'status':status.HTTP_404_NOT_FOUND})
