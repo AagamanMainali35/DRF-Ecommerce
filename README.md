@@ -82,10 +82,10 @@ This backend API handles:
 
 ## API Documentation
 
-Access Swagger UI for interactive API docs at:
+Access API Testing Points for interactive API docs at:
 
-```
-http://127.0.0.1:8000/swagger/
+```bash
+https://github.com/AagamanMainali35/DRF-Ecommerce/blob/main/Documents/DRF-Ecommerce.rest
 ```
 
 ---
@@ -135,4 +135,3 @@ For questions or help, reach out to me  at: aagamanmainali35@gmail.com
 
 ---
 
-Happy coding! 🚀
