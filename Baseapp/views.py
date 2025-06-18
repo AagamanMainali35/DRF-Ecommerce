@@ -9,7 +9,7 @@ from .models import *
 from .utility import generate_profile_id, checkpass , check_field
 from django.urls import reverse
 from django.db.models import Q
-from .serializer import productserilzer
+from .serializer import productserilzer,order_serilizer
 
 
 @api_view(['POST'])
@@ -33,7 +33,7 @@ def signup(requests):
         user_model.set_password(password)
         user_model.save()
         Profile.objects.create(user=user_model,profile_id=profile_id,gender=gender)
-        login_url= f'http://127.0.0.1:8000{reverse("signin")}'
+        login_url= f'http://127.0.0.1:8000{reverse("token_obtain_pair")}'
         return Response({"message": f"Signup completed for {email}","login_url": login_url})
 
 @permission_classes([IsAuthenticated])
@@ -86,3 +86,19 @@ def update_product(request, id):
 
     except Product.DoesNotExist:
         return Response({'message':'No product With fiven ID found', 'status':status.HTTP_404_NOT_FOUND})
+    
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def create_order(request):
+    payload=order_serilizer(data=request.data,context={'request': request})
+    if payload.is_valid():
+        print(payload.validated_data)
+        payload.save()
+        return Response({'message':"Order has been placed sucessfully","status":status.HTTP_201_CREATED})
+    
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
+def getallOrders(request):
+    User_Orders=Order.objects.all()
+    payload=order_serilizer(User_Orders,many=True)
+    return Response(payload.data)

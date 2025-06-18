@@ -28,3 +28,23 @@ class Product(models.Model):
     dicount_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     def __str__(self):
         return self.name
+
+class Order(models.Model):
+    order_id=models.CharField(max_length=255,verbose_name="Order_id")
+    order_date=models.DateField(auto_now=True)
+    customer=models.OneToOneField(User,verbose_name="Related_User",on_delete=models.CASCADE)
+    totalAmount=models.PositiveIntegerField()
+    def __str__(self):
+        return self.order_id
+
+class Order_item(models.Model):
+    prodcut_instance=models.ForeignKey(Product,on_delete=models.CASCADE)
+    order_instance=models.ForeignKey(Order,on_delete=models.CASCADE,related_name='order_items')
+    quantity = models.PositiveIntegerField()
+    
+    def __str__(self):
+        return f'{self.prodcut_instance.name}-{self.order_instance.customer.username} '  
+    
+
+    
+        

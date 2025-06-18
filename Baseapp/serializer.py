@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from .models import Product
-
+from .models import Product,Order,Order_item
+import random
 class productserilzer(serializers.ModelSerializer):
     class Meta:
         model = Product
@@ -34,3 +34,37 @@ class productserilzer(serializers.ModelSerializer):
                 discount = self.validated_data['discount']
                 self.validated_data['discount_price']= price - (price * discount / 100)
         return super().save(**kwargs)
+       
+class Items_Serializer(serializers.ModelSerializer):
+    prodcut_instance=productserilzer(read_only=True)
+    product_id=serializers.CharField(write_only=True)
+    class Meta:
+        model=Order_item
+        fields =['product_id','quantity','prodcut_instance']
+
+class order_serilizer(serializers.ModelSerializer):
+    order_items=Items_Serializer(many=True)
+    customer = serializers.HiddenField(default=serializers.CurrentUserDefault())
+    order_id=serializers.CharField(read_only=True)
+    totalAmount=serializers.IntegerField(read_only=True)
+    class Meta:
+        model=Order
+        fields=['order_items','customer','totalAmount','order_id']
+        read_only_fields = ['order_date']	        
+    def create(self, validated_data):
+        order_items=validated_data.pop('order_items')
+        validated_data['order_id']=f'ORD{random.randint(100000,999999)}'
+        Total = 0
+        for data in order_items:
+            pr = Product.objects.get(id=data['product_id'])
+            Total += pr.price * data['quantity']
+        validated_data['totalAmount'] = Total
+        order_ins=Order.objects.create(**validated_data)
+        for data in order_items:
+            pr=Product.objects.get(id=data['product_id'])
+            Total+=pr.price*data['quantity']
+            Order_item.objects.create(order_instance=order_ins,prodcut_instance=pr,quantity=data['quantity'])
+        order_ins.save()
+        return order_ins
+         
+ 

@@ -16,6 +16,8 @@ urlpatterns = [
     path('products/get_products/', views.get_products, name='get_products'),
     path('products/get_products/<int:product_id>/', views.get_productById, name='get_productById'),
     path('products/delete/<int:id>/',views.delete_Product,name='delete_product'),
-    path('products/update/<int:id>/',views.update_product,name='UpdateProduct')
+    path('products/update/<int:id>/',views.update_product,name='UpdateProduct'),
+    path('Order/create/',views.create_order,name='createOrder'),
+    path('Order/all/',views.getallOrders),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
