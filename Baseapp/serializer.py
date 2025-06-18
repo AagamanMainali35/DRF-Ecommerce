@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import Product,Order,Order_item
+from rest_framework.exceptions import ValidationError
 import random
 class productserilzer(serializers.ModelSerializer):
     class Meta:
@@ -34,7 +35,7 @@ class productserilzer(serializers.ModelSerializer):
                 discount = self.validated_data['discount']
                 self.validated_data['discount_price']= price - (price * discount / 100)
         return super().save(**kwargs)
-       
+    
 class Items_Serializer(serializers.ModelSerializer):
     prodcut_instance=productserilzer(read_only=True)
     product_id=serializers.CharField(write_only=True)
@@ -49,7 +50,7 @@ class order_serilizer(serializers.ModelSerializer):
     totalAmount=serializers.IntegerField(read_only=True)
     class Meta:
         model=Order
-        fields=['order_items','customer','totalAmount','order_id']
+        fields=['order_id','customer','totalAmount','order_items']
         read_only_fields = ['order_date']	        
     def create(self, validated_data):
         order_items=validated_data.pop('order_items')
@@ -66,5 +67,23 @@ class order_serilizer(serializers.ModelSerializer):
             Order_item.objects.create(order_instance=order_ins,prodcut_instance=pr,quantity=data['quantity'])
         order_ins.save()
         return order_ins
+    
+    def update(self, instance, validated_data):
+        order_items=validated_data.pop('order_items')
+        total=0
+        instance.order_items.all().delete()
+        for data in order_items:
+            pr=Product.objects.filter(id=data['product_id']).first()
+            if pr is not None:
+                pr_id=data['product_id']
+                quantity=data['quantity']
+                price=pr.price
+                total+=price*data['quantity']
+                Order_item.objects.create(order_instance=instance,prodcut_instance=pr,quantity=quantity)
+            else:
+                raise ValidationError(f"Product with id {data['product_id']} does not exist.")
+        instance.totalAmount=total
+        instance.save()   
+        return instance
          
  

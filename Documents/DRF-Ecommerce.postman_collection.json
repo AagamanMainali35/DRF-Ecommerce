@@ -8,12 +8,24 @@
 	"item": [
 		{
 			"name": "Register",
+			"event": [
+				{
+					"listen": "prerequest",
+					"script": {
+						"exec": [
+							""
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
 			"request": {
 				"method": "POST",
 				"header": [],
 				"body": {
 					"mode": "raw",
-					"raw": "{\r\n    \"email\":\"\",\r\n    \"first_name\":\"\",\r\n    \"last_name\":\"\",\r\n    \"password\":\"\"\r\n}",
+					"raw": "{\r\n    \"email\":\"asd232@gmail.com\",\r\n    \"first_name\":\"asdas\",\r\n    \"last_name\":\"sdasd\",\r\n    \"password\":\"adasd2341A!\"\r\n}",
 					"options": {
 						"raw": {
 							"language": "json"
@@ -21,7 +33,47 @@
 					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8000/signup/",
+					"raw": "{{host}}/signup/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"signup",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "JWT-Token",
+			"event": [
+				{
+					"listen": "test",
+					"script": {
+						"exec": [
+							"let response=pm.response.json();\r",
+							"pm.environment.set(\"Token\", response.access);"
+						],
+						"type": "text/javascript",
+						"packages": {}
+					}
+				}
+			],
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n\"username\":\"admin\",\r\n\"password\":\"123\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://127.0.0.1:8000/api/token/",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -31,7 +83,275 @@
 					],
 					"port": "8000",
 					"path": [
-						"signup",
+						"api",
+						"token",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Prodcut",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "name",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "description",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "price",
+							"value": "",
+							"type": "text"
+						},
+						{
+							"key": "image",
+							"type": "file",
+							"src": []
+						}
+					]
+				},
+				"url": {
+					"raw": "{{host}}/products/create_product/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"products",
+						"create_product",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all products",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/products/get_products/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"products",
+						"get_products",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Products",
+			"request": {
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "formdata",
+					"formdata": [
+						{
+							"key": "name",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "description",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "price",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						},
+						{
+							"key": "image",
+							"value": "",
+							"type": "text",
+							"disabled": true
+						}
+					]
+				},
+				"url": {
+					"raw": "{{host}}/products/update/<int:id>/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"products",
+						"update",
+						"<int:id>",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Product",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/products/delete/<int:Product_id>/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"products",
+						"delete",
+						"<int:Product_id>",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Order",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"order_items\": [\r\n    {\r\n      \"product_id\": 7,\r\n      \"quantity\": 1\r\n    },\r\n    {\r\n      \"product_id\": 8,\r\n      \"quantity\": 2\r\n    }\r\n  ]\r\n}\r\n",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/Order/create/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"Order",
+						"create",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all order",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/Order/all/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"Order",
+						"all",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Update Order",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "PATCH",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n    \"order_items\":[\r\n        {\r\n            \"product_id\":7,\r\n            \"quantity\":5\r\n        },\r\n        {\r\n            \"product_id\":8,\r\n            \"quantity\":2\r\n        }\r\n    ]\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "{{host}}/Order/<str:order_id>/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"Order",
+						"<str:order_id>",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Delete Order",
+			"request": {
+				"auth": {
+					"type": "bearer",
+					"bearer": [
+						{
+							"key": "token",
+							"value": "{{Token}}",
+							"type": "string"
+						}
+					]
+				},
+				"method": "DELETE",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/order/delete/<str:order_id>/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"order",
+						"delete",
+						"<str:order_id>",
 						""
 					]
 				}

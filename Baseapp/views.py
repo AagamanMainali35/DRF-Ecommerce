@@ -102,3 +102,28 @@ def getallOrders(request):
     User_Orders=Order.objects.all()
     payload=order_serilizer(User_Orders,many=True)
     return Response(payload.data)
+
+
+@api_view(['PATCH'])
+@permission_classes([IsAuthenticated])
+def update_order(request,order_id):
+    Order_data=Order.objects.filter(order_id=order_id).first()
+    if Order_data is None:
+        return Response({'Message':f"No order assosiated with {order_id} was found","status":status.HTTP_404_NOT_FOUND})
+    objects=order_serilizer(Order_data,partial=True,data=request.data)
+    if objects.is_valid():
+        objects.save()
+        return Response({'Message':f"Order Updated Sucessfully","data":objects.data,"status":status.HTTP_200_OK})
+
+@api_view(['DELETE'])
+@permission_classes([IsAuthenticated])
+def deleteOrder(request,order_id):
+    orders=Order.objects.filter(order_id=order_id).first()
+    if orders is not None:
+        orders.delete()
+        return Response({"message":f"Order no - {order_id} has been sucessfully deleted","status":status.HTTP_200_OK})
+
+    else:
+        return Response({"message":f"NO order with id {order_id} has been found","status":status.HTTP_404_NOT_FOUND})
+    
+    
