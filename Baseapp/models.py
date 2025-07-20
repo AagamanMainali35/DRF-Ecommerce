@@ -13,7 +13,7 @@ class Profile(models.Model):
     role = models.CharField(max_length=20, default='customer')
     def __str__(self):
         return f'Profile of  "{self.user.username}" '
-    
+   
     
 class Product(models.Model):
     name = models.CharField(max_length=100)
@@ -29,21 +29,19 @@ class Product(models.Model):
     def __str__(self):
         return self.name
 
-class Order(models.Model):
-    order_id=models.CharField(max_length=255,verbose_name="Order_id")
-    order_date=models.DateField(auto_now=True)
+class Cart(models.Model):
     customer=models.OneToOneField(User,verbose_name="Related_User",on_delete=models.CASCADE)
     totalAmount=models.PositiveIntegerField()
     def __str__(self):
         return self.order_id
 
-class Order_item(models.Model):
+class Cart_item(models.Model):
     prodcut_instance=models.ForeignKey(Product,on_delete=models.CASCADE)
-    order_instance=models.ForeignKey(Order,on_delete=models.CASCADE,related_name='order_items')
+    cart_instance=models.ForeignKey(Cart,on_delete=models.CASCADE,related_name='cart_items')
     quantity = models.PositiveIntegerField()
     
     def __str__(self):
-        return f'{self.prodcut_instance.name}-{self.order_instance.customer.username} '  
+        return f'{self.prodcut_instance.name}-{self.cart_instance.customer.username} '  
     
 
     

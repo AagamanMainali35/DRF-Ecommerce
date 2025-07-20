@@ -9,8 +9,24 @@ from .models import *
 from .utility import generate_profile_id, checkpass , check_field
 from django.urls import reverse
 from django.db.models import Q
-from .serializer import productserilzer,order_serilizer
+from .serializer import productserilzer,Cart_serilizer
+from rest_framework.pagination import PageNumberPagination
 
+@api_view(['POST'])
+def login(requests):
+    username=requests.data.get('username')
+    password=requests.data.get('password')
+    if not username or not password:
+        return Response({'error': 'Username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+    user = authenticate(username=username, password=password)
+    if user is not None:
+        token=RefreshToken.for_user(user)
+        return Response({
+            "refresh_Token":str(token),
+            "access_Token":str(token.access_token)
+        })
+    else:
+        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['POST'])
 def signup(requests):
@@ -50,8 +66,11 @@ def create_product(request):
 @api_view(['GET'])
 def get_products(request):
     products = Product.objects.all()
-    serializer = productserilzer(products, many=True)
-    return Response(serializer.data, status=status.HTTP_200_OK)
+    paginator_ins=PageNumberPagination()
+    paginator_ins.page_size=10
+    paginated_data=paginator_ins.paginate_queryset(products,request)
+    serializer = productserilzer(paginated_data, many=True)
+    return paginator_ins.get_paginated_response(serializer.data)
 
 @permission_classes([IsAuthenticated])
 @api_view(['GET'])
@@ -90,7 +109,7 @@ def update_product(request, id):
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
 def create_order(request):
-    payload=order_serilizer(data=request.data,context={'request': request})
+    payload=Cart_serilizer(data=request.data,context={'request': request})
     if payload.is_valid():
         print(payload.validated_data)
         payload.save()
@@ -99,18 +118,18 @@ def create_order(request):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def getallOrders(request):
-    User_Orders=Order.objects.all()
-    payload=order_serilizer(User_Orders,many=True)
+    User_Orders=Cart.objects.all()
+    payload=Cart_serilizer(User_Orders,many=True)
     return Response(payload.data)
 
 
 @api_view(['PATCH'])
 @permission_classes([IsAuthenticated])
 def update_order(request,order_id):
-    Order_data=Order.objects.filter(order_id=order_id).first()
-    if Order_data is None:
+    cart_data=Cart.objects.filter(order_id=order_id).first()
+    if cart_data is None:
         return Response({'Message':f"No order assosiated with {order_id} was found","status":status.HTTP_404_NOT_FOUND})
-    objects=order_serilizer(Order_data,partial=True,data=request.data)
+    objects=Cart_serilizer(cart_data,partial=True,data=request.data)
     if objects.is_valid():
         objects.save()
         return Response({'Message':f"Order Updated Sucessfully","data":objects.data,"status":status.HTTP_200_OK})
@@ -118,12 +137,12 @@ def update_order(request,order_id):
 @api_view(['DELETE'])
 @permission_classes([IsAuthenticated])
 def deleteOrder(request,order_id):
-    orders=Order.objects.filter(order_id=order_id).first()
-    if orders is not None:
-        orders.delete()
-        return Response({"message":f"Order no - {order_id} has been sucessfully deleted","status":status.HTTP_200_OK})
+    cart=Cart.objects.filter(order_id=order_id).first()
+    if cart is not None:
+        cart.delete()
+        return Response({"message":f"Cart has been sucessfully deleted","status":status.HTTP_200_OK})
 
     else:
-        return Response({"message":f"NO order with id {order_id} has been found","status":status.HTTP_404_NOT_FOUND})
+        return Response({"message":f"NO order  has been found","status":status.HTTP_404_NOT_FOUND})
     
     
