@@ -1,8 +1,8 @@
 from rest_framework import serializers
-from .models import Product,Order,Order_item
+from .models import Product,Cart,Cart_item
 from rest_framework.exceptions import ValidationError
 import random
-class productserilzer(serializers.ModelSerializer):
+class productserailzer(serializers.ModelSerializer):
     class Meta:
         model = Product
         fields = '__all__'
@@ -26,8 +26,8 @@ class productserilzer(serializers.ModelSerializer):
             if data['image'].name.endswith(('.png', '.jpg', '.jpeg')) is not True:
                 raise serializers.ValidationError("Image must be a PNG or JPG file.")
         return data
-    
-    def save(self, **kwargs):
+
+    def save(self, **kwargs): 
         discount= kwargs.get('discount', None)
         if discount is not None:
             if kwargs['discount'] > 0:
@@ -35,51 +35,49 @@ class productserilzer(serializers.ModelSerializer):
                 discount = self.validated_data['discount']
                 self.validated_data['discount_price']= price - (price * discount / 100)
         return super().save(**kwargs)
-    
+
 class Items_Serializer(serializers.ModelSerializer):
-    prodcut_instance=productserilzer(read_only=True)
+    prodcut_instance=productserailzer(read_only=True)
     product_id=serializers.CharField(write_only=True)
     class Meta:
-        model=Order_item
+        model=Cart_item
         fields =['product_id','quantity','prodcut_instance']
 
-class order_serilizer(serializers.ModelSerializer):
-    order_items=Items_Serializer(many=True)
+class Cart_serilizer(serializers.ModelSerializer):
+    cart_items=Items_Serializer(many=True)
     customer = serializers.HiddenField(default=serializers.CurrentUserDefault())
-    order_id=serializers.CharField(read_only=True)
     totalAmount=serializers.IntegerField(read_only=True)
     class Meta:
-        model=Order
-        fields=['order_id','customer','totalAmount','order_items']
-        read_only_fields = ['order_date']	        
+        model=Cart
+        fields=['customer','totalAmount','cart_items']
+        	        
     def create(self, validated_data):
-        order_items=validated_data.pop('order_items')
-        validated_data['order_id']=f'ORD{random.randint(100000,999999)}'
+        cart_items=validated_data.pop('cart_items')
         Total = 0
-        for data in order_items:
+        for data in cart_items:
             pr = Product.objects.get(id=data['product_id'])
             Total += pr.price * data['quantity']
         validated_data['totalAmount'] = Total
-        order_ins=Order.objects.create(**validated_data)
-        for data in order_items:
+        cart_ins=Cart.objects.create(**validated_data)
+        for data in cart_items:
             pr=Product.objects.get(id=data['product_id'])
             Total+=pr.price*data['quantity']
-            Order_item.objects.create(order_instance=order_ins,prodcut_instance=pr,quantity=data['quantity'])
-        order_ins.save()
-        return order_ins
-    
+            Cart_item.objects.create(order_instance= cart_ins,prodcut_instance=pr,quantity=data['quantity'])
+        cart_ins.save()
+        return cart_ins
+
     def update(self, instance, validated_data):
-        order_items=validated_data.pop('order_items')
+        cart_items=validated_data.pop('cart_items')
         total=0
-        instance.order_items.all().delete()
-        for data in order_items:
+        instance.cart_items.all().delete()
+        for data in cart_items:
             pr=Product.objects.filter(id=data['product_id']).first()
             if pr is not None:
                 pr_id=data['product_id']
                 quantity=data['quantity']
                 price=pr.price
                 total+=price*data['quantity']
-                Order_item.objects.create(order_instance=instance,prodcut_instance=pr,quantity=quantity)
+                Cart_item.objects.create(order_instance=instance,prodcut_instance=pr,quantity=quantity)
             else:
                 raise ValidationError(f"Product with id {data['product_id']} does not exist.")
         instance.totalAmount=total
