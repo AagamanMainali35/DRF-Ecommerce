@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from .models import Product,Cart,Cart_item
 from rest_framework.exceptions import ValidationError
-import random
+from django.db import transaction
 class productserailzer(serializers.ModelSerializer):
     class Meta:
         model = Product
@@ -50,21 +50,50 @@ class Cart_serilizer(serializers.ModelSerializer):
     class Meta:
         model=Cart
         fields=['customer','totalAmount','cart_items']
-        	        
+        	            
     def create(self, validated_data):
-        cart_items=validated_data.pop('cart_items')
-        Total = 0
-        for data in cart_items:
-            pr = Product.objects.get(id=data['product_id'])
-            Total += pr.price * data['quantity']
-        validated_data['totalAmount'] = Total
-        cart_ins=Cart.objects.create(**validated_data)
-        for data in cart_items:
-            pr=Product.objects.get(id=data['product_id'])
-            Total+=pr.price*data['quantity']
-            Cart_item.objects.create(order_instance= cart_ins,prodcut_instance=pr,quantity=data['quantity'])
-        cart_ins.save()
-        return cart_ins
+        cartobj=Cart.objects.filter(customer=validated_data.get('customer')).first()
+        user_items=Cart_item.objects.filter(cart_instance=cartobj)
+        cart_items = validated_data.pop('cart_items', [])
+        with transaction.atomic():
+            if cartobj is None:
+                cart_ins=Cart.objects.create(**validated_data,totalAmount=0)
+                Total = 0
+                for data in cart_items:
+                    pr_id=data.get('product_id')
+                    pr_ins=Product.objects.filter(id=pr_id).first()
+                    if pr_ins is None:
+                        raise serializers.ValidationError('Invalid Product ID')
+                    else:
+                        Cart_item.objects.create(prodcut_instance=pr_ins,cart_instance=cart_ins,quantity=data.get('quantity'))
+                Total += pr_ins.price * data['quantity']
+                print(f'the total is "{Total}"')
+                cart_ins.totalAmount = Total
+                cart_ins.save()
+                return cart_ins
+            else:
+                for data in cart_items:
+                    pr_id = data.get('product_id')
+                    quantity = data.get('quantity')
+                    exists = user_items.filter(prodcut_instance__id=pr_id).exists()
+                    pr_ins = Product.objects.filter(id=pr_id).first()
+                    newprice=0
+                    if pr_ins is None:
+                        raise serializers.ValidationError('Invalid Product ID')
+                    if exists:
+                        pr_detail=Product.objects.get(id=pr_id)
+                        pr_obj=Cart_item.objects.get(cart_instance=cartobj,prodcut_instance=pr_detail)
+                        new_quantity=quantity+pr_obj.quantity
+                        newprice+=pr_detail.price*new_quantity
+                        pr_obj.quantity=new_quantity
+                        cartobj.totalAmount=newprice
+                        cartobj.save()
+                        pr_obj.save()
+                    else:
+                        cartobj.totalAmount += int(pr_ins.price) * int(quantity)
+                        cartobj.save()
+                        Cart_item.objects.create(prodcut_instance=pr_ins, cart_instance=cartobj, quantity=quantity)
+        return cartobj
 
     def update(self, instance, validated_data):
         cart_items=validated_data.pop('cart_items')
@@ -77,7 +106,7 @@ class Cart_serilizer(serializers.ModelSerializer):
                 quantity=data['quantity']
                 price=pr.price
                 total+=price*data['quantity']
-                Cart_item.objects.create(order_instance=instance,prodcut_instance=pr,quantity=quantity)
+                Cart_item.objects.create(cart_instance=instance,prodcut_instance=pr,quantity=quantity)
             else:
                 raise ValidationError(f"Product with id {data['product_id']} does not exist.")
         instance.totalAmount=total
