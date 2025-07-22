@@ -46,14 +46,14 @@
 			"response": []
 		},
 		{
-			"name": "JWT-Token",
+			"name": "Login",
 			"event": [
 				{
 					"listen": "test",
 					"script": {
 						"exec": [
-							"let response=pm.response.json();\r",
-							"pm.environment.set(\"Token\", response.access);"
+							"let response = pm.response.json();\r",
+							"pm.environment.set(\"Token\", response.access_token);"
 						],
 						"type": "text/javascript",
 						"packages": {}
@@ -73,7 +73,7 @@
 					}
 				},
 				"url": {
-					"raw": "http://127.0.0.1:8000/api/token/",
+					"raw": "http://127.0.0.1:8000/login/",
 					"protocol": "http",
 					"host": [
 						"127",
@@ -83,8 +83,46 @@
 					],
 					"port": "8000",
 					"path": [
-						"api",
-						"token",
+						"login",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get all products",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/products/get_products/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"products",
+						"get_products",
+						""
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Prodcut By ID",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "{{host}}/products/get_products/2/",
+					"host": [
+						"{{host}}"
+					],
+					"path": [
+						"products",
+						"get_products",
+						"2",
 						""
 					]
 				}
@@ -129,25 +167,6 @@
 					"path": [
 						"products",
 						"create_product",
-						""
-					]
-				}
-			},
-			"response": []
-		},
-		{
-			"name": "Get all products",
-			"request": {
-				"method": "GET",
-				"header": [],
-				"url": {
-					"raw": "{{host}}/products/get_products/",
-					"host": [
-						"{{host}}"
-					],
-					"path": [
-						"products",
-						"get_products",
 						""
 					]
 				}
@@ -224,7 +243,7 @@
 			"response": []
 		},
 		{
-			"name": "Create Order",
+			"name": "Create Cart",
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -262,7 +281,7 @@
 			"response": []
 		},
 		{
-			"name": "Get all order",
+			"name": "Get all cart_items",
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -291,7 +310,7 @@
 			"response": []
 		},
 		{
-			"name": "Update Order",
+			"name": "Update Cart",
 			"request": {
 				"auth": {
 					"type": "bearer",
@@ -329,7 +348,7 @@
 			"response": []
 		},
 		{
-			"name": "Delete Order",
+			"name": "Delete cart_items",
 			"request": {
 				"auth": {
 					"type": "bearer",
