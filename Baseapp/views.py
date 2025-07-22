@@ -9,7 +9,7 @@ from .models import *
 from .utility import generate_profile_id, checkpass , check_field
 from django.urls import reverse
 from django.db.models import Q
-from .serializer import productserilzer,Cart_serilizer
+from .serializer import productserailzer,Cart_serilizer
 from rest_framework.pagination import PageNumberPagination
 
 @api_view(['POST'])
@@ -55,7 +55,7 @@ def signup(requests):
 @permission_classes([IsAuthenticated])
 @api_view(['POST'])
 def create_product(request):
-    Requested_data= productserilzer(data=request.data)
+    Requested_data= productserailzer(data=request.data)
     if Requested_data.is_valid() is False:
         return Response({'error': Requested_data.errors, 'status': status.HTTP_400_BAD_REQUEST}, status=status.HTTP_400_BAD_REQUEST)
     else : 
@@ -69,7 +69,7 @@ def get_products(request):
     paginator_ins=PageNumberPagination()
     paginator_ins.page_size=10
     paginated_data=paginator_ins.paginate_queryset(products,request)
-    serializer = productserilzer(paginated_data, many=True)
+    serializer = productserailzer(paginated_data, many=True)
     return paginator_ins.get_paginated_response(serializer.data)
 
 @permission_classes([IsAuthenticated])
@@ -77,7 +77,7 @@ def get_products(request):
 def get_productById(request, product_id):
     try:
         product = Product.objects.get(id=product_id)
-        serializer = productserilzer(product)
+        serializer = productserailzer(product)
         return Response(serializer.data, status=status.HTTP_200_OK)
     except Product.DoesNotExist:
         return Response({'error': 'Product not found'}, status=status.HTTP_404_NOT_FOUND    )
@@ -97,7 +97,7 @@ permission_classes([IsAuthenticated])
 def update_product(request, id):
     try:
         products=Product.objects.get(id=id)
-        validation=productserilzer(products,partial=True,data=request.data)
+        validation=productserailzer(products,partial=True,data=request.data)
         if validation.is_valid():
             print(validation._validated_data)
             validation.save()
@@ -114,6 +114,9 @@ def create_order(request):
         print(payload.validated_data)
         payload.save()
         return Response({'message':"Order has been placed sucessfully","status":status.HTTP_201_CREATED})
+    else:
+        return Response({'message':payload.errors,"status":status.HTTP_400_BAD_REQUEST})
+
     
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])

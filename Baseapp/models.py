@@ -28,12 +28,12 @@ class Product(models.Model):
     dicount_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
     def __str__(self):
         return self.name
-
+    
 class Cart(models.Model):
     customer=models.OneToOneField(User,verbose_name="Related_User",on_delete=models.CASCADE)
     totalAmount=models.PositiveIntegerField()
     def __str__(self):
-        return self.order_id
+        return self.customer.username
 
 class Cart_item(models.Model):
     prodcut_instance=models.ForeignKey(Product,on_delete=models.CASCADE)
