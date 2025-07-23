@@ -185,7 +185,6 @@ def chekout(request):
     else: 
         return Response({'status':status.HTTP_408_REQUEST_TIMEOUT,'Messsage':'Please try again later......'})
 
-
 @api_view(['GET'])
 def verify(request):
     pidx=request.GET.get('pidx')
@@ -206,3 +205,4 @@ def verify(request):
         return Response({'message':'Payment successful! Thank you.'})
     elif data['status'] == "Pending":
         return Response({'message':'Payment is pending. Please wait. Contact Khalti support for more details','status':status.HTTP_102_PROCESSING})
+
