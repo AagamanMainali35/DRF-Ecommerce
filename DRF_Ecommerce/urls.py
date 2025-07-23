@@ -21,6 +21,8 @@ urlpatterns = [
     path('Order/create/',views.create_order,name='createOrder'),
     path('Order/all/',views.getallOrders),
     path('Order/<str:order_id>/',views.update_order,name='update_Order'),
-    path('order/delete/<str:order_id>/',views.deleteOrder,name='deleteOrder')
+    path('order/delete/<str:order_id>/',views.deleteOrder,name='deleteOrder'),
+    path('checkout/',views.chekout,name='checkout'),
+    path('khalti/callback/',views.verify,name='verify')
     ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 

@@ -11,6 +11,9 @@ from django.urls import reverse
 from django.db.models import Q
 from .serializer import productserailzer,Cart_serilizer
 from rest_framework.pagination import PageNumberPagination
+import requests
+from django.shortcuts import redirect
+
 
 @api_view(['POST'])
 def login(requests):
@@ -152,4 +155,54 @@ def deleteOrder(request,order_id):
     else:
         return Response({"message":f"NO order  has been found","status":status.HTTP_404_NOT_FOUND})
     
-    
+
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
+def chekout(request):
+    url = "https://dev.khalti.com/api/v2/epayment/initiate/"
+    headers = {
+        "Authorization": "Key 2724d7c4030a42538ba3f91a68619b71",  
+        "Content-Type": "application/json"
+    }
+    payload = {
+        "return_url": f"http://127.0.0.1:8000/{reverse('verify')}",
+        "website_url": "http://127.0.0.1:8000/",
+        "amount": 1000, # Formula is alwys amount*100
+        "purchase_order_id": "order123", #Genrate ID for each unique order
+        "purchase_order_name": "Test Product", # alwaya Keep Your Order Name here
+        "customer_info": { # put the user info over here no need foe all that hassle
+            "name": "Test Bahadur",
+            "email": "test@khalti.com",
+            "phone": "9800000001"
+        }
+    }
+    data=requests.post(url,headers=headers,json=payload)
+    data=data.json()
+    for key,value in data.items():
+        print(f'{key}:{value}')
+    if 'payment_url' in data:
+        return Response({'payment_url':data['payment_url']})
+    else: 
+        return Response({'status':status.HTTP_408_REQUEST_TIMEOUT,'Messsage':'Please try again later......'})
+
+
+@api_view(['GET'])
+def verify(request):
+    pidx=request.GET.get('pidx')
+    if not pidx:
+            return Response({'message':"Missing payment identifier please try again", 'status':status.HTTP_400_BAD_REQUEST})
+    lookup_url = "https://dev.khalti.com/api/v2/epayment/lookup/"
+    header={
+        'Authorization':'key 2724d7c4030a42538ba3f91a68619b71',
+        'Content-Type':'application/json'
+    }
+    payload={
+        'pidx':pidx
+    }
+    data=requests.post(lookup_url,headers=header,json=payload)
+    data=data.json()
+    if data['status']=='Completed':
+        # TODO: mark order as paid in your DB using purchase_order_id or pid
+        return Response({'message':'Payment successful! Thank you.'})
+    elif data['status'] == "Pending":
+        return Response({'message':'Payment is pending. Please wait. Contact Khalti support for more details','status':status.HTTP_102_PROCESSING})
