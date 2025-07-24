@@ -50,6 +50,18 @@ class Cart_serilizer(serializers.ModelSerializer):
     class Meta:
         model=Cart
         fields=['customer','totalAmount','cart_items']
+        
+    def validate(self, data):
+        cart_items=data.get('cart_items')
+        for items in cart_items:
+            id=items.get('product_id')
+            requested_quantity=items.get('quantity')
+            product_instance=Product.objects.filter(id=id).first()
+            if int(product_instance.stock)==0:
+                raise serializers.ValidationError('Out of stock !')            
+            if int(product_instance.stock) < int(requested_quantity):
+                raise serializers.ValidationError(f' Only {product_instance.stock} avilable for this product')
+        return data
         	            
     def create(self, validated_data):
         cartobj=Cart.objects.filter(customer=validated_data.get('customer')).first()

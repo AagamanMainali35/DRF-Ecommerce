@@ -115,7 +115,12 @@ def create_order(request):
         payload.save()
         return Response({'message':"Order has been placed sucessfully","status":status.HTTP_201_CREATED})
     else:
-        return Response({'message':payload.errors,"status":status.HTTP_400_BAD_REQUEST})
+        errors = payload.errors
+        first_key = next(iter(errors))
+        message=payload.errors[first_key]    
+        if isinstance(message, list):
+            message=message[0]    
+        return Response({'message': message, 'status': 400}, status=400)
 
     
 @api_view(['GET'])
@@ -144,7 +149,6 @@ def deleteOrder(request,order_id):
     if cart is not None:
         cart.delete()
         return Response({"message":f"Cart has been sucessfully deleted","status":status.HTTP_200_OK})
-
     else:
         return Response({"message":f"NO order  has been found","status":status.HTTP_404_NOT_FOUND})
     
