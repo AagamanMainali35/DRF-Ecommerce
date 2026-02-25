@@ -15,7 +15,7 @@ import requests
 from django.shortcuts import redirect
 
 
-@api_view(['POST'])
+@api_view(['GET'])
 def login(requests):
     return Response({'message':'Endpoint working Fine'})
     # username=requests.data.get('username')
