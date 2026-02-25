@@ -17,19 +17,20 @@ from django.shortcuts import redirect
 
 @api_view(['POST'])
 def login(requests):
-    username=requests.data.get('username')
-    password=requests.data.get('password')
-    if not username or not password:
-        return Response({'error': 'Username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
-    user = authenticate(username=username, password=password)
-    if user is not None:
-        token=RefreshToken.for_user(user)
-        return Response({
-            "refresh_Token":str(token),
-            "access_Token":str(token.access_token)
-        })
-    else:
-        return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
+    return Response({'message':'Endpoint working Fine'})
+    # username=requests.data.get('username')
+    # password=requests.data.get('password')
+    # if not username or not password:
+    #     return Response({'error': 'Username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+    # user = authenticate(username=username, password=password)
+    # if user is not None:
+    #     token=RefreshToken.for_user(user)
+    #     return Response({
+    #         "refresh_Token":str(token),
+    #         "access_Token":str(token.access_token)
+    #     })
+    # else:
+    #     return Response({'error': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 @api_view(['POST'])
 def signup(requests):
